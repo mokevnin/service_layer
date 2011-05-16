@@ -21,9 +21,9 @@ module ServiceLayer
     rescue StandardError => e
       exception = @@exceptions[e.class.to_s.underscore]
       unless exception
-        raise Error.new("#{e.class}: #{e.message}", @objects[:object])
+        raise Error.new(@objects[:object], "#{e.class}: #{e.message}")
       end
-      raise exception.classify.constantize.new(e.message, @objects[:object])
+      raise exception.classify.constantize.new(@objects[:object], e.message)
     end
 
   end
