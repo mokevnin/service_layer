@@ -1,13 +1,14 @@
 module ServiceLayer
   class Command
     @@exceptions = {
-      :persist_error => ["active_record/record_not_saved", "active_record/record_invalid"]
+      #"active_record/record_not_saved" => PersistError,
+      #"active_record/record_invalid" => PersistError
     }
 
-    def initialize(service, object, &block)
+    def initialize(service, objects, &block)
       @service = service
       @block = block
-      @object = object
+      @objects = objects
     end
 
     def method_missing(method, *args, &block)
@@ -15,13 +16,14 @@ module ServiceLayer
     end
 
     def execute
-      instance_eval &@block
-      @object
+      @block.call
+      @objects[:object]
     rescue StandardError => e
-      unless @@exceptions[:persist_error].include? e.class.to_s.underscore
+      exception = @@exceptions[e.class.to_s.underscore]
+      unless exception
         raise Error.new("#{e.class}: #{e.message}")
       end
-      raise PersistError.new(e.message, @object)
+      raise exception.classify.constantize.new(e.message, @objects[:object])
     end
 
   end
