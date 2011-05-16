@@ -1,5 +1,6 @@
 module ServiceLayer
   class Command
+    cattr_writer :exceptions
     @@exceptions = {
       #"active_record/record_not_saved" => PersistError,
       #"active_record/record_invalid" => PersistError
