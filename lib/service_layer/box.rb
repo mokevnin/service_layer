@@ -1,15 +1,12 @@
 module ServiceLayer
-  class Command
-    cattr_writer :exceptions
-    @@exceptions = {
-      #"active_record/record_not_saved" => PersistError,
-      #"active_record/record_invalid" => PersistError
-    }
+  class Box
+    cattr_accessor :exceptions
+    @@exceptions = {}
 
     def initialize(service, objects, &block)
       @service = service
-      @block = block
       @objects = objects
+      @block   = block
     end
 
     def method_missing(method, *args, &block)
@@ -17,11 +14,12 @@ module ServiceLayer
     end
 
     def execute
-      @block.call
+      @block.call if @block
       @objects[:object]
     rescue StandardError => e
+      raise e if e.kind_of?(Error)
       exception = @@exceptions[e.class.to_s.underscore]
-      unless exception
+      if !exception
         raise Error.new(@objects[:object], "#{e.class}: #{e.message}")
       end
       raise exception.classify.constantize.new(@objects[:object], e.message)

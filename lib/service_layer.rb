@@ -1,4 +1,4 @@
-require 'service_layer/command'
+require 'service_layer/box'
 require 'service_layer/service'
 
 module ServiceLayer
